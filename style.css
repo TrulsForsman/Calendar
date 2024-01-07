@@ -12,7 +12,7 @@ body {
     display: flex;
     background: #3c11b1;
     min-height: 100vh;
-    padding: 0 10px;
+    padding: 0 11px;
     align-items: center;
     justify-content: center;
 }
