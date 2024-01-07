@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <title>Calendar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+}
+ 
+body {
+    display: flex;
+    background: #3c11b1;
+    min-height: 100vh;
+    padding: 0 10px;
+    align-items: center;
+    justify-content: center;
+}
+ 
+.calendar-container {
+    background: #fff;
+    width: 450px;
+    border-radius: 10px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+}
+ 
+.calendar-container header {
+    display: flex;
+    align-items: center;
+    padding: 25px 30px 10px;
+    justify-content: space-between;
+}
+ 
+header .calendar-navigation {
+    display: flex;
+}
+ 
+header .calendar-navigation span {
+    height: 38px;
+    width: 38px;
+    margin: 0 1px;
+    cursor: pointer;
+    text-align: center;
+    line-height: 38px;
+    border-radius: 50%;
+    user-select: none;
+    color: #aeabab;
+    font-size: 1.9rem;
+}
+ 
+.calendar-navigation span:last-child {
+    margin-right: -10px;
+}
+ 
+header .calendar-navigation span:hover {
+    background: #f2f2f2;
+}
+ 
+header .calendar-current-date {
+    font-weight: 500;
+    font-size: 1.45rem;
+}
+ 
+.calendar-body {
+    padding: 20px;
+}
+ 
+.calendar-body ul {
+    list-style: none;
+    flex-wrap: wrap;
+    display: flex;
+    text-align: center;
+}
+ 
+.calendar-body .calendar-dates {
+    margin-bottom: 20px;
+}
+ 
+.calendar-body li {
+    width: calc(100% / 7);
+    font-size: 1.07rem;
+    color: #414141;
+}
+ 
+.calendar-body .calendar-weekdays li {
+    cursor: default;
+    font-weight: 500;
+}
+ 
+.calendar-body .calendar-dates li {
+    margin-top: 30px;
+    position: relative;
+    z-index: 1;
+    cursor: pointer;
+}
+ 
+.calendar-dates li.inactive {
+    color: #aaa;
+}
+ 
+.calendar-dates li.active {
+    color: #fff;
+}
+ 
+.calendar-dates li::before {
+    position: absolute;
+    content: "";
+    z-index: -1;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+ 
+.calendar-dates li.active::before {
+    background: #6332c5;
+}
+ 
+.calendar-dates li:not(.active):hover::before {
+    background: #6332c5;
+}
+
+.li #text{
+    z-index: 1000;
+}
+
+.calendar-dates li.event-marker {
+    color: #fff;
+}
+
+.modal {
+display: none;
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+padding: 15px;
+background-color: #f8f8f8;
+z-index: 1000;
+border-radius: 10px;
+}
+#eventDetails p{
+    padding: 10px;
+    font-weight: bol
+}
+
+.event-marker {
+background-color: #4d269c;
+cursor: pointer;
+height: 20px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="calendar-container">
+        <header class="calendar-header">
+            <p class="calendar-current-date"></p>
+            <div class="calendar-navigation">
+                <span id="calendar-prev" class="material-symbols-rounded">chevron_left</span>
+                <span id="calendar-next" class="material-symbols-rounded">chevron_right</span>
+            </div>
+        </header>
+
+        <div class="calendar-body">
+            <ul class="calendar-weekdays">
+                <li>Mån</li>
+                <li>Tis</li>
+                <li>Ons</li>
+                <li>Tor</li>
+                <li>Fre</li>
+                <li>Lör</li>
+                <li>Sön</li>
+            </ul>
+            <ul class="calendar-dates"></ul>
+        </div>
+    </div>
+
+    <div class="modal" id="eventModal">
+        <span id="closeModal" style="cursor: pointer;">✖</span>
+        <div id="eventDetails"></div>
+    </div>
+
+    <script>
+        let date = new Date();
+        let year = date.getFullYear();
+        let month = date.getMonth();
+
+        const day = document.querySelector(".calendar-dates");
+        const currdate = document.querySelector(".calendar-current-date");
+        const prenexIcons = document.querySelectorAll(".calendar-navigation span");
+        const months = [
+            "Januari",
+            "Februari",
+            "Mars",
+            "April",
+            "Maj",
+            "Juni",
+            "Juli",
+            "Augusti",
+            "September",
+            "Oktober",
+            "November",
+            "December"
+        ];
+
+        const manipulate = () => {
+            let dayone = new Date(year, month, 0).getDay();
+            let lastdate = new Date(year, month + 1, 0).getDate();
+            let dayend = new Date(year, month, lastdate).getDay();
+            let monthlastdate = new Date(year, month, 0).getDate();
+            let lit = "";
+
+            for (let i = dayone; i > 0; i--) {
+                lit += `<li class="inactive">${monthlastdate - i + 1}</li>`;
+            }
+
+            for (let i = 1; i <= lastdate; i++) {
+                let isToday = i === date.getDate() && month === date.getMonth() && year === date.getFullYear() ? "active" : "";
+                lit += `<li class="${isToday}">${i}</li>`;
+            }
+
+            for (let i = dayend; i < 6; i++) {
+                lit += `<li class="inactive">${i - dayend + 1}</li>`;
+            }
+
+            currdate.innerText = `${months[month]} ${year}`;
+            day.innerHTML = lit;
+            hämtaOchVisaData();
+        }
+
+        prenexIcons.forEach(icon => {
+            icon.addEventListener("click", () => {
+                month = icon.id === "calendar-prev" ? month - 1 : month + 1;
+
+                if (month < 0) {
+                    month = 11;
+                    year--;
+                } else if (month > 11) {
+                    month = 0;
+                    year++;
+                }
+
+                manipulate();
+            });
+        });
+
+        function hämtaOchVisaData() {
+            fetch('./events.json')
+                .then(response => response.json())
+                .then(data => {
+                    data.events.forEach(event => {
+                        const eventDate = new Date(event.date);
+                        const eventMonth = eventDate.getMonth();
+                        const eventYear = eventDate.getFullYear();
+
+                        if (eventMonth === month && eventYear === year) {
+                            const dayElement = document.querySelector(`.calendar-dates li:nth-child(${eventDate.getDate()})`);
+                            if (dayElement) {
+                                dayElement.classList.add('event-marker');
+                                dayElement.addEventListener('click', () => showEventModal(event));
+                            }
+                        }
+                    });
+                })
+                .catch(error => console.error('Ett fel uppstod:', error));
+        }
+
+        function showEventModal(event) {
+            const modal = document.getElementById('eventModal');
+            const closeModalButton = document.getElementById('closeModal');
+            const eventDetails = document.getElementById('eventDetails');
+
+            eventDetails.innerHTML = `
+                <p>${event.name}</p>
+                <p>Tid: ${event.time}</p>
+                <p>Plats: ${event.place}</p>
+                <p>Arrangör: ${event.arrangör}</p>
+            `;
+
+            modal.style.display = 'block';
+
+            closeModalButton.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+
+        // Initiera kalendern för första gången
+        manipulate();
+    </script>
+</body>
+
+</html>
